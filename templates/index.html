@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Link Analyzer</h1>
+        <form id="linkForm">
+            <input type="text" id="linkInput" placeholder="Enter the link" required>
+            <button type="submit">Analyze</button>
+        </form>
+    </div>
+    
+    <script>
+        const form = document.getElementById('linkForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const link = document.getElementById('linkInput').value;
+
+            // Call the backend API
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ link: link }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // Redirect to results page
+                window.location.href = `/result?data=${encodeURIComponent(result.data)}`;
+            } else {
+                alert('Error analyzing link.');
+            }
+        });
+    </script>
+</body>
+</html>

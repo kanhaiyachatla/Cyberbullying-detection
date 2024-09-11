@@ -3,39 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Analyzer</title>
+    <title>CyberbullyingDetectionAPI</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Link Analyzer</h1>
+        <h1>CyberbullyingDetectionAPI</h1>
+        <br>
         <form id="linkForm">
-            <input type="text" id="linkInput" placeholder="Enter the link" required>
-            <button type="submit">Analyze</button>
+            <input type="text" id="linkInput" name="link" placeholder="Enter the link" required>
+            <button type="submit" id="submitButton">Analyze</button>
         </form>
+        <div id="results" style="margin-top: 20px;"></div>
     </div>
     
     <script>
         const form = document.getElementById('linkForm');
+        const submitButton = document.getElementById('submitButton');
+        const resultsDiv = document.getElementById('results');
+        
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const link = document.getElementById('linkInput').value;
+            
+            // Disable the button
+            submitButton.disabled = true;
+            submitButton.style.backgroundColor = 'grey';
+            submitButton.textContent = 'Analyzing...';
+            
+            const formData = new FormData(form);
 
-            // Call the backend API
-            const response = await fetch('/analyze', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ link: link }),
-            });
+            try {
+                // Call the backend API
+                const response = await fetch('/api/v1/analyze', {
+                    method: 'POST',
+                    body: formData,
+                });
 
-            const result = await response.json();
-            if (result.success) {
-                // Redirect to results page
-                window.location.href = `/result?data=${encodeURIComponent(result.data)}`;
-            } else {
-                alert('Error analyzing link.');
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display the counts first
+                    const counts = result.counts;
+                    resultsDiv.innerHTML = `
+                        <h2>Analysis Results:</h2>
+                        <p><strong>Not Bullying:</strong> ${counts.not_bullying}</p>
+                        <p><strong>Bullying:</strong> ${counts.bullying}</p>
+                        <p><strong>Age:</strong> ${counts.age}</p>
+                        <p><strong>Religion:</strong> ${counts.religion}</p>
+                        <p><strong>Ethnicity:</strong> ${counts.ethnicity}</p>
+                        <p><strong>Gender:</strong> ${counts.gender}</p>
+                        <hr>
+                    `;
+                        
+                    // Display any 10 comments
+                    resultsDiv.innerHTML += `<h3>Top 10 Comments:</h3>`;
+                    result.predictions.slice(0, 10).forEach(entry => {
+                        resultsDiv.innerHTML += `
+                            <div>
+                                <strong>User:</strong> ${entry.user}<br>
+                                <strong>Comment:</strong> ${entry.text}<br>
+                                <strong>Sentiment:</strong> ${entry.sentiment.join(', ')}
+                            </div>
+                            <hr>
+                        `;
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>Error analyzing link. Please check the link and try again.</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = '<p>Error connecting to the server. Please try again later.</p>';
+            } finally {
+                // Enable the button after processing
+                submitButton.disabled = false;
+                submitButton.style.backgroundColor = '#007BFF';
+                submitButton.textContent = 'Analyze';
             }
         });
     </script>

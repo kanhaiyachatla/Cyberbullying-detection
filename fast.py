@@ -27,10 +27,10 @@ async def root(link: str = Form(...)):
     L = instaloader.Instaloader()
     try:
         L = instaloader.Instaloader()
-        L.load_session_from_file('chatlakanhaiya')
+        L.load_session_from_file('filename') #replace with any file name
 # If session doesn't exist, create it
         if not L.context.is_logged_in:
-            L.login('chatlakanhaiya', 'Kanhaiya@12')
+            L.login('chatlakanhaiya', 'Kanhaiya@12') # Here replace with your Instagram Credentials
             L.save_session_to_file()
     except Exception as e:
         print(e)

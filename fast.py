@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import instaloader
+import os
 import torch
 from transformers import DistilBertForSequenceClassification,DistilBertTokenizer
 
@@ -24,13 +25,15 @@ def home(request: Request):
 
 @app.post('/api/v1/analyze')
 async def root(link: str = Form(...)):
+    username = os.getenv("INSTAGRAM_USERNAME")
+    password = os.getenv("INSTAGRAM_PASSWORD")
     L = instaloader.Instaloader()
     try:
         L = instaloader.Instaloader()
         L.load_session_from_file('filename') #replace with any file name
 # If session doesn't exist, create it
         if not L.context.is_logged_in:
-            L.login('chatlakanhaiya', 'Kanhaiya@12') # Here replace with your Instagram Credentials
+            L.login(username, password) # Here replace with your Instagram Credentials
             L.save_session_to_file()
     except Exception as e:
         print(e)
